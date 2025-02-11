@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diabetes Prediction</title>
+</head>
+<body>
+    <h2>Diabetes Progression Prediction</h2>
+    <form id="predictForm">
+        <label>Age: <input type="number" step="0.01" id="age" required></label><br>
+
+        <label>Sex:
+            <select id="sex" required>
+                <option value="" disabled selected>Select</option>
+                <option value="1">Male</option>
+                <option value="0">Female</option>
+            </select>
+        </label><br>
+
+        <label>BMI: <input type="number" step="0.01" id="bmi" required></label><br>
+        <label>Blood Pressure: <input type="number" step="0.01" id="bp" required></label><br>
+        <label>Cholesterol Level: <input type="number" step="0.01" id="cholesterol"></label><br>
+        <label>Bad Cholesterol: <input type="number" step="0.01" id="bad_chol"></label><br>
+        <label>Good Cholesterol: <input type="number" step="0.01" id="good_chol"></label><br>
+        <label>Total Cholesterol to HDL Ratio: <input type="number" step="0.01" id="chol_ratio"></label><br>
+        <label>Triglycerides Level: <input type="number" step="0.01" id="triglycerides"></label><br>
+        <label>Glycated Hemoglobin Level: <input type="number" step="0.01" id="hba1c"></label><br>
+
+        <button type="submit">Predict</button>
+    </form>
+
+    <h3>Prediction: <span id="result"></span></h3>
+
+    <script>
+        document.getElementById("predictForm").onsubmit = async function (event) {
+            event.preventDefault();
+        
+            let age = parseFloat(document.getElementById("age").value);
+            let sexElement = document.getElementById("sex");
+            let sex = sexElement.options[sexElement.selectedIndex].value; // Get selected value
+            let bmi = parseFloat(document.getElementById("bmi").value);
+            let bp = parseFloat(document.getElementById("bp").value);
+            let cholesterol = parseFloat(document.getElementById("cholesterol").value);
+            let badChol = parseFloat(document.getElementById("bad_chol").value);
+            let goodChol = parseFloat(document.getElementById("good_chol").value);
+            let cholRatio = parseFloat(document.getElementById("chol_ratio").value);
+            let triglycerides = parseFloat(document.getElementById("triglycerides").value);
+            let hba1c = parseFloat(document.getElementById("hba1c").value);
+        
+            // Ensure all required inputs are filled
+            if (isNaN(age) || sex === "" || isNaN(bmi) || isNaN(bp) || isNaN(cholesterol) || 
+                isNaN(badChol) || isNaN(goodChol) || isNaN(cholRatio) || isNaN(triglycerides) || isNaN(hba1c)) {
+                alert("Please fill all fields correctly.");
+                return;
+            }
+        
+            sex = parseInt(sex); // Convert sex to integer (0 or 1)
+        
+            let features = [age, sex, bmi, bp, cholesterol, badChol, goodChol, cholRatio, triglycerides, hba1c];
+        
+            try {
+                let response = await fetch("http://127.0.0.1:5000/predict", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ features: features })
+                });
+        
+                let data = await response.json();
+                console.log("Response from server:", data); // Debugging line
+        
+                if (data.prediction !== undefined) {
+                    document.getElementById("result").innerText = data.prediction;
+                } else {
+                    document.getElementById("result").innerText = "Error: No prediction received.";
+                }
+            } catch (error) {
+                console.error("Fetch error:", error);
+                document.getElementById("result").innerText = "Error: " + error.message;
+            }
+        };
+        
+        
+    </script>
+</body>
+</html>
